@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<title>Online HTML Editor</title>
+
+<head>
+    <meta charset="utf-8">
+</head>
+
+<body>
+    <div id="eu"></div>
+</body>
+<style>
+
+</style>
+<script>
+    let eu = document.getElementById('eu')
+    eu.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        // Close the modal
+        console.log('ola')
+    }
+});
+</script>
+
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo do Gato</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #gameCanvas {
+            display: block;
+            background-color: #87CEEB;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .cat {
+            width: 50px;
+            height: 50px;
+            background-color: orange;
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            background-image: url('gato.png');
+            background-size: cover;
+        }
+        .spikePit {
+            width: 70px;
+            height: 35px;
+            background-color: black;
+            position: absolute;
+            bottom: 0;
+            animation: movePit 2s linear infinite;
+        }
+        .spikePit::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 5px,
+                white 5px,
+                white 10px
+            );
+        }
+        @keyframes movePit {
+            from { right: -70px; }
+            to { right: 100%; }
+        }
+        #restartButton {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: white;
+        }
+        #highScore {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            font-size: 20px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameCanvas">
+        <div class="cat" id="cat"></div>
+        <div id="score">Pontuação: 0</div>
+        <div id="highScore">Recorde: 0</div>
+        <button id="restartButton" onclick="restartGame()">Reiniciar</button>
+    </div>
+    <script>
+        const cat = document.getElementById('cat');
+        const restartButton = document.getElementById('restartButton');
+        const scoreDisplay = document.getElementById('score');
+        const highScoreDisplay = document.getElementById('highScore');
+        let isJumping = false;
+        let gameOver = false;
+        let score = 0;
+        let highScore = 0;
+        let speed = 2;
+
+        document.addEventListener('click', () => {
+            if (!isJumping && !gameOver) {
+                isJumping = true;
+                cat.style.transition = 'bottom 0.3s';
+                cat.style.bottom = '200px';
+                setTimeout(() => {
+                    cat.style.transition = 'bottom 0.7s';
+                    cat.style.bottom = '0';
+                    setTimeout(() => {
+                        isJumping = false;
+                    }, 700);
+                }, 300);
+            }
+        });
+
+        function createSpikePit() {
+            const spikePit = document.createElement('div');
+            spikePit.classList.add('spikePit');
+            spikePit.style.right = '-70px';
+            spikePit.style.animation = `movePit ${speed}s linear infinite`;
+            document.getElementById('gameCanvas').appendChild(spikePit);
+            return spikePit;
+        }
+
+        function checkCollision(spikePit) {
+            const catRect = cat.getBoundingClientRect();
+            const spikePitRect = spikePit.getBoundingClientRect();
+
+            if (
+                catRect.left < spikePitRect.right &&
+                catRect.right > spikePitRect.left &&
+                catRect.top < spikePitRect.bottom &&
+                catRect.bottom > spikePitRect.top
+            ) {
+                endGame();
+            } else if (spikePitRect.right < catRect.left && !gameOver) {
+                score++;
+                scoreDisplay.textContent = `Pontuação: ${score}`;
+                spikePit.remove();
+                createSpikePit();
+                if (score % 10 === 0) {
+                    speed *= 0.9; // Aumenta a velocidade em 10%
+                }
+            }
+        }
+
+        function endGame() {
+            gameOver = true;
+            document.querySelectorAll('.spikePit').forEach(spikePit => spikePit.remove());
+            restartButton.style.display = 'block';
+            if (score > highScore) {
+                highScore = score;
+                highScoreDisplay.textContent = `Recorde: ${highScore}`;
+            }
+        }
+
+        function restartGame() {
+            gameOver = false;
+            score = 0;
+            speed = 2;
+            scoreDisplay.textContent = `Pontuação: ${score}`;
+            createSpikePit();
+            restartButton.style.display = 'none';
+        }
+
+        setInterval(() => {
+            if (!gameOver) {
+                document.querySelectorAll('.spikePit').forEach(spikePit => checkCollision(spikePit));
+            }
+        }, 50);
+
+        createSpikePit();
+    </script>
+</body>
+</html>
